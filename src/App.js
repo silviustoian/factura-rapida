@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-const API = import.meta.env.VITE_API_URL;
+
 function App() {
   const aiSectionRef = useRef();
   const [rawText, setRawText] = useState("");
@@ -10,6 +10,7 @@ function App() {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const API = process.env.REACT_APP_API_URL;
 
   const [clientForm, setClientForm] = useState({
     name: "",
