@@ -33,7 +33,7 @@ function App() {
     setLoading(true);
 
     try {
-      const parseRes = await fetch("http://localhost:4000/parse-client-ai", {
+      const parseRes = await fetch(`${process.env.REACT_APP_API_URL}/parse-client-ai`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: rawText }),
@@ -41,7 +41,7 @@ function App() {
 
       const { parsed } = await parseRes.json();
 
-      const genRes = await fetch("http://localhost:4000/generate-invoice", {
+      const genRes = await fetch(`${process.env.REACT_APP_API_URL}/generate-invoice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -93,14 +93,14 @@ function App() {
         formData.append("audio", file);
 
         try {
-          const res = await fetch("http://localhost:4000/voice-to-text", {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/voice-to-text`, {
             method: "POST",
             body: formData,
           });
 
           const data = await res.json();
           if (data.text) {
-            const cleanRes = await fetch("http://localhost:4000/ai-clean-text", {
+            const cleanRes = await fetch(`${process.env.REACT_APP_API_URL}/ai-clean-text`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ text: data.text }),
@@ -171,7 +171,7 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/generate-invoice", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/generate-invoice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client: clientForm, services }),
