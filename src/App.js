@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 
+const API = import.meta.env.VITE_API_URL;
 function App() {
   const aiSectionRef = useRef();
   const [rawText, setRawText] = useState("");
@@ -33,22 +34,28 @@ function App() {
     setLoading(true);
 
     try {
-      const parseRes = await fetch(`${process.env.REACT_APP_API_URL}/parse-client-ai`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: rawText }),
-      });
+      const parseRes = await fetch(
+        `${API}/parse-client-ai`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: rawText }),
+        }
+      );
 
       const { parsed } = await parseRes.json();
 
-      const genRes = await fetch(`${process.env.REACT_APP_API_URL}/generate-invoice`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client: parsed.client,
-          services: parsed.services,
-        }),
-      });
+      const genRes = await fetch(
+        `${API}/generate-invoice`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client: parsed.client,
+            services: parsed.services,
+          }),
+        }
+      );
 
       const blob = await genRes.blob();
       setPdfBlob(blob);
@@ -93,18 +100,24 @@ function App() {
         formData.append("audio", file);
 
         try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL}/voice-to-text`, {
-            method: "POST",
-            body: formData,
-          });
+          const res = await fetch(
+            `${API}/voice-to-text`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
 
           const data = await res.json();
           if (data.text) {
-            const cleanRes = await fetch(`${process.env.REACT_APP_API_URL}/ai-clean-text`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ text: data.text }),
-            });
+            const cleanRes = await fetch(
+              `${API}/ai-clean-text`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: data.text }),
+              }
+            );
 
             const clean = await cleanRes.json();
             if (clean.corrected) {
@@ -137,7 +150,9 @@ function App() {
     const cui = clientForm.cui?.trim();
     if (!cui || cui.length < 6) return;
     try {
-      const res = await fetch(`https://infocui.ro/system/api/data?key=6baf0bd4dc427d01a92adaeb1d06aeaff156f95d&cui=${cui}`);
+      const res = await fetch(
+        `https://infocui.ro/system/api/data?key=6baf0bd4dc427d01a92adaeb1d06aeaff156f95d&cui=${cui}`
+      );
       const data = await res.json();
       if (data.status === 200 && data.data) {
         const c = data.data;
@@ -154,7 +169,11 @@ function App() {
   };
 
   const handleAddService = () => {
-    if (!currentService.name || currentService.quantity <= 0 || currentService.price <= 0) {
+    if (
+      !currentService.name ||
+      currentService.quantity <= 0 ||
+      currentService.price <= 0
+    ) {
       setError("Completează toate câmpurile serviciului corect.");
       return;
     }
@@ -171,11 +190,14 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/generate-invoice`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client: clientForm, services }),
-      });
+      const res = await fetch(
+        `${API}/generate-invoice`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ client: clientForm, services }),
+        }
+      );
 
       const blob = await res.blob();
       setPdfBlob(blob);
@@ -190,7 +212,9 @@ function App() {
     <div className="p-6 space-y-12 max-w-5xl mx-auto">
       {/* === AI Section === */}
       <section className="bg-white p-6 rounded-xl shadow border-l-4 border-indigo-500">
-        <h2 className="text-xl font-bold text-indigo-600 mb-2">🧠 Factură cu AI</h2>
+        <h2 className="text-xl font-bold text-indigo-600 mb-2">
+          🧠 Factură cu AI
+        </h2>
         <textarea
           rows={5}
           value={rawText}
@@ -250,7 +274,9 @@ function App() {
             type="text"
             placeholder="CUI"
             value={clientForm.cui}
-            onChange={(e) => setClientForm({ ...clientForm, cui: e.target.value })}
+            onChange={(e) =>
+              setClientForm({ ...clientForm, cui: e.target.value })
+            }
             onBlur={handleCuiLookup}
             className="border px-3 py-2 rounded text-sm"
           />
@@ -258,28 +284,36 @@ function App() {
             type="text"
             placeholder="Nume"
             value={clientForm.name}
-            onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+            onChange={(e) =>
+              setClientForm({ ...clientForm, name: e.target.value })
+            }
             className="border px-3 py-2 rounded text-sm"
           />
           <input
             type="email"
             placeholder="Email"
             value={clientForm.email}
-            onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+            onChange={(e) =>
+              setClientForm({ ...clientForm, email: e.target.value })
+            }
             className="border px-3 py-2 rounded text-sm"
           />
           <input
             type="text"
             placeholder="Telefon"
             value={clientForm.phone}
-            onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+            onChange={(e) =>
+              setClientForm({ ...clientForm, phone: e.target.value })
+            }
             className="border px-3 py-2 rounded text-sm"
           />
           <input
             type="text"
             placeholder="Adresă"
             value={clientForm.address}
-            onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
+            onChange={(e) =>
+              setClientForm({ ...clientForm, address: e.target.value })
+            }
             className="border px-3 py-2 rounded text-sm col-span-full"
           />
         </div>
@@ -289,24 +323,39 @@ function App() {
             type="text"
             placeholder="Serviciu"
             value={currentService.name}
-            onChange={(e) => setCurrentService({ ...currentService, name: e.target.value })}
+            onChange={(e) =>
+              setCurrentService({ ...currentService, name: e.target.value })
+            }
             className="flex-1 border px-3 py-2 rounded text-sm"
           />
           <input
             type="number"
             placeholder="Cantitate"
             value={currentService.quantity}
-            onChange={(e) => setCurrentService({ ...currentService, quantity: Number(e.target.value) })}
+            onChange={(e) =>
+              setCurrentService({
+                ...currentService,
+                quantity: Number(e.target.value),
+              })
+            }
             className="w-24 border px-2 py-2 rounded text-sm"
           />
           <input
             type="number"
             placeholder="Preț"
             value={currentService.price}
-            onChange={(e) => setCurrentService({ ...currentService, price: Number(e.target.value) })}
+            onChange={(e) =>
+              setCurrentService({
+                ...currentService,
+                price: Number(e.target.value),
+              })
+            }
             className="w-24 border px-2 py-2 rounded text-sm"
           />
-          <button onClick={handleAddService} className="bg-gray-700 text-white px-4 py-2 rounded text-sm">
+          <button
+            onClick={handleAddService}
+            className="bg-gray-700 text-white px-4 py-2 rounded text-sm"
+          >
             Adaugă
           </button>
         </div>
