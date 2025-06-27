@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import VoiceInput from "./components/VoiceInput";
+import API from "./api";
 
 function App() {
   const aiSectionRef = useRef();
@@ -7,7 +8,7 @@ function App() {
   const [pdfBlob, setPdfBlob] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const API = process.env.REACT_APP_API_URL;
+
 
   const [clientForm, setClientForm] = useState({
     name: "",
