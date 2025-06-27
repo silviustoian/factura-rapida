@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-
+import VoiceInput from "./components/VoiceInput";
 
 function App() {
   const aiSectionRef = useRef();
@@ -7,9 +7,6 @@ function App() {
   const [pdfBlob, setPdfBlob] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
   const API = process.env.REACT_APP_API_URL;
 
   const [clientForm, setClientForm] = useState({
@@ -35,28 +32,22 @@ function App() {
     setLoading(true);
 
     try {
-      const parseRes = await fetch(
-        `${API}/parse-client-ai`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: rawText }),
-        }
-      );
+      const parseRes = await fetch(`${API}/parse-client-ai`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: rawText }),
+      });
 
       const { parsed } = await parseRes.json();
 
-      const genRes = await fetch(
-        `${API}/generate-invoice`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            client: parsed.client,
-            services: parsed.services,
-          }),
-        }
-      );
+      const genRes = await fetch(`${API}/generate-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client: parsed.client,
+          services: parsed.services,
+        }),
+      });
 
       const blob = await genRes.blob();
       setPdfBlob(blob);
@@ -77,74 +68,6 @@ function App() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : "audio/webm";
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-      setRawText("");
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        const file = new File([blob], "voice.webm", { type: mimeType });
-        const formData = new FormData();
-        formData.append("audio", file);
-
-        try {
-          const res = await fetch(
-            `${API}/voice-to-text`,
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
-
-          const data = await res.json();
-          if (data.text) {
-            const cleanRes = await fetch(
-              `${API}/ai-clean-text`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: data.text }),
-              }
-            );
-
-            const clean = await cleanRes.json();
-            if (clean.corrected) {
-              setRawText(clean.corrected);
-            }
-          }
-        } catch (err) {
-          console.error("Eroare voice-to-text:", err);
-        } finally {
-          setRecording(false);
-        }
-      };
-
-      mediaRecorder.start();
-      setRecording(true);
-    } catch (err) {
-      console.error("Eroare la startRecording:", err);
-      alert("Permite accesul la microfon sau încearcă alt browser.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    }
   };
 
   const handleCuiLookup = async () => {
@@ -191,14 +114,11 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${API}/generate-invoice`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ client: clientForm, services }),
-        }
-      );
+      const res = await fetch(`${API}/generate-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client: clientForm, services }),
+      });
 
       const blob = await res.blob();
       setPdfBlob(blob);
@@ -227,17 +147,13 @@ function App() {
           className="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2"
         />
         <div className="flex gap-2 mb-4">
-          <button
-            onMouseDown={startRecording}
-            onMouseUp={stopRecording}
-            onTouchStart={startRecording}
-            onTouchEnd={stopRecording}
-            className={`flex-1 py-2 rounded text-white font-medium transition ${
-              recording ? "bg-red-600" : "bg-gray-800 hover:bg-gray-900"
-            }`}
-          >
-            {recording ? "🎙️ Înregistrează..." : "🎤 Ține apăsat"}
-          </button>
+          <VoiceInput
+            onTextReady={(text) => {
+              console.log("📥 Text primit din voice:", text);
+              setRawText(text);
+            }}
+          />
+
           <button
             onClick={() => {
               setRawText("");
