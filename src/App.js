@@ -1,14 +1,17 @@
-import { useRef, useState } from "react";
-import VoiceInput from "./components/VoiceInput";
+import { useState } from "react";
+import AiSection from "./sections/AiSection";
+import ClassicFormSection from "./sections/ClassicFormSection";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react";
+import PDFPreview from "./components/PDFPreview";
 import API from "./api";
 
 function App() {
-  const aiSectionRef = useRef();
+  
   const [rawText, setRawText] = useState("");
   const [pdfBlob, setPdfBlob] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  
 
   const [clientForm, setClientForm] = useState({
     name: "",
@@ -131,173 +134,75 @@ function App() {
   };
 
   return (
-    <div className="p-6 space-y-12 max-w-5xl mx-auto">
-      {/* === AI Section === */}
-      <section className="bg-white p-6 rounded-xl shadow border-l-4 border-indigo-500">
-        <h2 className="text-xl font-bold text-indigo-600 mb-2">
-          🧠 Factură cu AI
-        </h2>
-        <textarea
-          rows={5}
-          value={rawText}
-          onChange={(e) => {
-            setRawText(e.target.value);
-            if (!e.target.value) setPdfBlob(null);
-          }}
-          placeholder="Ex: Softvision, CUI 12345678, email x@mail.com, 2 ore consultanță la 200 RON"
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2"
-        />
-        <div className="flex gap-2 mb-4">
-          <VoiceInput
-            onTextReady={(text) => {
-              console.log("📥 Text primit din voice:", text);
-              setRawText(text);
-            }}
-          />
-
-          <button
-            onClick={() => {
-              setRawText("");
-              setPdfBlob(null);
-            }}
-            className="text-sm px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-          >
-            ♻️ Curăță
-          </button>
+    <div className="min-h-screen bg-gray-50 px-4 py-10 font-sans">
+      <SignedOut>
+        <div className="text-center mt-24">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Conectează-te pentru a folosi aplicația
+          </h2>
+          <SignInButton mode="modal">
+            <button className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition">
+              🔐 Login
+            </button>
+          </SignInButton>
         </div>
-        <button
-          onClick={handleGenerateAI}
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
-        >
-          Generează Factura cu AI
-        </button>
+      </SignedOut>
 
-        {pdfBlob && (
-          <button
-            onClick={handleDownload}
-            className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-          >
-            📥 Descarcă factura
-          </button>
-        )}
-      </section>
+      <SignedIn>
+        <header className="flex justify-between items-center mb-12 max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-800">
+            Factura Rapida
+          </h1>
+          <UserButton afterSignOutUrl="/" />
+        </header>
 
-      {/* === Classic Section === */}
-      <section className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-lg font-semibold mb-3">📝 Formular Clasic</h2>
+        <div className="max-w-4xl mx-auto space-y-12">
+          <section className="text-center mb-8">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+              📄 Facturează instant cu AI
+            </h2>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+              Transformă vocea sau un text într-o factură PDF profesională. Rapid, precis și automatizat.
+            </p>
+          </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <input
-            type="text"
-            placeholder="CUI"
-            value={clientForm.cui}
-            onChange={(e) =>
-              setClientForm({ ...clientForm, cui: e.target.value })
-            }
-            onBlur={handleCuiLookup}
-            className="border px-3 py-2 rounded text-sm"
+          <AiSection
+            rawText={rawText}
+            setRawText={setRawText}
+            setPdfBlob={setPdfBlob}
+            handleGenerateAI={handleGenerateAI}
+            pdfBlob={pdfBlob}
+            handleDownload={handleDownload}
+            loading={loading}
           />
-          <input
-            type="text"
-            placeholder="Nume"
-            value={clientForm.name}
-            onChange={(e) =>
-              setClientForm({ ...clientForm, name: e.target.value })
-            }
-            className="border px-3 py-2 rounded text-sm"
+
+          <ClassicFormSection
+            clientForm={clientForm}
+            setClientForm={setClientForm}
+            handleCuiLookup={handleCuiLookup}
+            currentService={currentService}
+            setCurrentService={setCurrentService}
+            services={services}
+            handleAddService={handleAddService}
+            handleClassicSubmit={handleClassicSubmit}
+            loading={loading}
           />
-          <input
-            type="email"
-            placeholder="Email"
-            value={clientForm.email}
-            onChange={(e) =>
-              setClientForm({ ...clientForm, email: e.target.value })
-            }
-            className="border px-3 py-2 rounded text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Telefon"
-            value={clientForm.phone}
-            onChange={(e) =>
-              setClientForm({ ...clientForm, phone: e.target.value })
-            }
-            className="border px-3 py-2 rounded text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Adresă"
-            value={clientForm.address}
-            onChange={(e) =>
-              setClientForm({ ...clientForm, address: e.target.value })
-            }
-            className="border px-3 py-2 rounded text-sm col-span-full"
-          />
+
+          <PDFPreview blob={pdfBlob} />
+
+          {error && (
+            <p className="text-center text-red-600 text-sm font-medium">
+              {error}
+            </p>
+          )}
+
+          <footer className="pt-16">
+            <p className="text-center text-sm text-gray-400">
+              © 2025 Factura Rapida — Build with 💙 in Romania
+            </p>
+          </footer>
         </div>
-
-        <div className="flex flex-col md:flex-row gap-3 mb-4">
-          <input
-            type="text"
-            placeholder="Serviciu"
-            value={currentService.name}
-            onChange={(e) =>
-              setCurrentService({ ...currentService, name: e.target.value })
-            }
-            className="flex-1 border px-3 py-2 rounded text-sm"
-          />
-          <input
-            type="number"
-            placeholder="Cantitate"
-            value={currentService.quantity}
-            onChange={(e) =>
-              setCurrentService({
-                ...currentService,
-                quantity: Number(e.target.value),
-              })
-            }
-            className="w-24 border px-2 py-2 rounded text-sm"
-          />
-          <input
-            type="number"
-            placeholder="Preț"
-            value={currentService.price}
-            onChange={(e) =>
-              setCurrentService({
-                ...currentService,
-                price: Number(e.target.value),
-              })
-            }
-            className="w-24 border px-2 py-2 rounded text-sm"
-          />
-          <button
-            onClick={handleAddService}
-            className="bg-gray-700 text-white px-4 py-2 rounded text-sm"
-          >
-            Adaugă
-          </button>
-        </div>
-
-        {services.length > 0 && (
-          <ul className="mb-4 list-disc pl-5 text-sm text-gray-700">
-            {services.map((s, i) => (
-              <li key={i}>
-                {s.name} – {s.quantity} x {s.price} RON
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <button
-          onClick={handleClassicSubmit}
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          Generează Factura Clasică (test live)
-        </button>
-      </section>
-
-      {error && <p className="text-center text-red-600 text-sm">{error}</p>}
+      </SignedIn>
     </div>
   );
 }
