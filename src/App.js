@@ -6,7 +6,6 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
-  useUser,
 } from "@clerk/clerk-react";
 import PDFPreview from "./components/PDFPreview";
 import API from "./api";
@@ -32,49 +31,6 @@ function App() {
   });
 
   const [services, setServices] = useState([]);
-
-  const handleGenerateAI = async () => {
-    setError("");
-    setPdfBlob(null);
-    if (!rawText.trim()) return setError("Te rog introdu un text valid.");
-    setLoading(true);
-
-    try {
-      // 1. Trimitem textul către endpointul AI
-      const parseRes = await fetch(`${API}/parse-client-ai`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: rawText }),
-      });
-
-      const { parsed } = await parseRes.json();
-
-      // 2. Capitalizăm denumirile serviciilor
-      const servicesWithCapital = parsed.services.map((s) => ({
-        ...s,
-        name: s.name.charAt(0).toUpperCase() + s.name.slice(1),
-      }));
-
-      // 3. Trimitem către endpointul de generare factură
-      const genRes = await fetch(`${API}/generate-invoice`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client: parsed.client,
-          services: servicesWithCapital,
-        }),
-      });
-
-      // 4. Primim PDF-ul
-      const blob = await genRes.blob();
-      setPdfBlob(blob);
-      setRawText("");
-    } catch (e) {
-      setError("Eroare la AI/generare: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDownload = () => {
     if (!pdfBlob) return;
@@ -140,6 +96,7 @@ function App() {
       const blob = await res.blob();
       setPdfBlob(blob);
     } catch (err) {
+      console.error("Eroare la generare:", err);
       setError("Eroare la generare.");
     } finally {
       setLoading(false);
@@ -184,8 +141,8 @@ function App() {
             rawText={rawText}
             setRawText={setRawText}
             setPdfBlob={setPdfBlob}
-            handleGenerateAI={handleGenerateAI}
             pdfBlob={pdfBlob}
+            handleGenerateAI={() => {}}
             handleDownload={handleDownload}
             loading={loading}
           />
