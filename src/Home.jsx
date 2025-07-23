@@ -10,8 +10,8 @@ function Home() {
       <header className="fixed top-0 left-0 w-full bg-white shadow z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <img
-            className="w-full max-w-20 mx-0 rounded-xl shadow-lg"
-            src="https://sdmntprcentralus.oaiusercontent.com/files/00000000-58e8-61f5-b221-872fd6929b94/raw?se=2025-07-01T16%3A05%3A37Z&sp=r&sv=2024-08-04&sr=b&scid=e73fa50a-5aa7-5399-8cf3-500cec0d8158&skoid=04233560-0ad7-493e-8bf0-1347c317d021&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-01T13%3A44%3A23Z&ske=2025-07-02T13%3A44%3A23Z&sks=b&skv=2024-08-04&sig=Wi%2B46EATTOb/BLxsEK5pSiR8nW0PaHDT0XY7GFc6w6g%3D"
+            className="w-full max-w-10 mx-0 rounded-xl shadow-lg"
+            src="https://sdmntprwestus2.oaiusercontent.com/files/00000000-9e14-61f8-afac-98cbdb798112/raw?se=2025-07-01T16%3A36%3A35Z&sp=r&sv=2024-08-04&sr=b&scid=97661fc6-cbe3-561f-b5b9-0eb444df41a4&skoid=04233560-0ad7-493e-8bf0-1347c317d021&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-01T06%3A03%3A36Z&ske=2025-07-02T06%3A03%3A36Z&sks=b&skv=2024-08-04&sig=RWA%2ByExiDFs643YopeQQLIPWY6KtMhFmz8XQMn96UwM%3D"
             alt="Preview aplicație"
           />
 
