@@ -103,6 +103,46 @@ function App() {
     }
   };
 
+  const handleGenerateAI = async () => {
+    setError("");
+    setPdfBlob(null);
+
+    if (!rawText.trim()) return setError("Te rog introdu un text valid.");
+    setLoading(true);
+
+    try {
+      const parseRes = await fetch(`${API}/parse-client-ai`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: rawText }),
+      });
+
+      const { parsed } = await parseRes.json();
+
+      const servicesWithCapital = parsed.services.map((s) => ({
+        ...s,
+        name: s.name.charAt(0).toUpperCase() + s.name.slice(1),
+      }));
+
+      const genRes = await fetch(`${API}/generate-invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client: parsed.client,
+          services: servicesWithCapital,
+        }),
+      });
+
+      const blob = await genRes.blob();
+      setPdfBlob(blob);
+      setRawText("");
+    } catch (e) {
+      setError("Eroare la AI/generare: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10 font-sans">
       <SignedOut>
@@ -142,7 +182,7 @@ function App() {
             setRawText={setRawText}
             setPdfBlob={setPdfBlob}
             pdfBlob={pdfBlob}
-            handleGenerateAI={() => {}}
+            handleGenerateAI={handleGenerateAI} // ✅ Acum e corect
             handleDownload={handleDownload}
             loading={loading}
           />
